@@ -1,0 +1,6 @@
+{
+  "appendToExisting": true,
+  "ini": {
+    "savePath": "clippings.md"
+  }
+}

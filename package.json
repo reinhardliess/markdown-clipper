@@ -1,0 +1,31 @@
+{
+  "name": "markdown-clipper",
+  "version": "0.1.0",
+  "description": "Clipper tool to copy HTML as markdown",
+  "main": "",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ahk",
+    "autohotkey",
+    "markdown",
+    "tools"
+  ],
+  "author": "Reinhard Liess",
+  "license": "MIT",
+  "devDependencies": {
+    "biga.ahk": "^0.52.0",
+    "json.ahk": "^0.1.0",
+    "rd-config-ahk": "^0.1.0",
+    "rd-regexp-ahk": "^0.1.2",
+    "rd-utility-ahk": "^0.1.0",
+    "unit-testing.ahk": "^0.6.1"
+  },
+  "dependencies": {
+    "to-markdown-cli": "^0.4.4"
+  }
+}

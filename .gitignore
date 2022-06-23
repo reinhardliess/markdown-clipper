@@ -1,0 +1,10 @@
+node_modules
+.vscode/
+
+/build/deploy
+/build/deploy.cmd
+/build/github
+config-user/user.ini
+
+*.log
+temp*.*

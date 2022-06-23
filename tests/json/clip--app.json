@@ -1,0 +1,6 @@
+{
+  "appName": "Thunderbird",
+  "isBrowser": false,
+  "title": "At vero eos et accusam et justo duo dolores - Mozilla Thunderbird",
+  "sourceUrl": "imap://user@domain.de@server:143/fetch>UID>/INBOX>10"
+}

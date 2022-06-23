@@ -1,0 +1,6 @@
+{
+  "appendToExisting": true,
+  "ini": {
+    "savePath": "%USERPROFILE%\\documents\\markdown-clipper\\${source}-${title}.md"
+  }
+}
