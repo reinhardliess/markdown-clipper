@@ -306,3 +306,29 @@ class markdownClip {
   }
 
 }
+
+class markdownTools {
+
+  /**
+    * Increases/decreases heading level in text
+    * @param {string} text - source text
+    * @param {integer} numChange - value of change
+    * @returns {string}
+  */
+  mdChangeHeadingLevel(text, numChange) {
+
+    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+
+    converted := re.replace(text, "m)^#{1,6}", objBindMethod(this, "_fn_changeHeading", numChange))
+    return converted
+  }
+
+  _fn_changeHeading(numChange, match, haystack) {
+    ; OutputDebug, % match[0]
+    newLevel := Strlen(match[0]) + numChange
+    ; newLevel := newLevel > 6 ? 6 : newLevel
+    ; newLevel := newLevel < 1 ? 1 : newLevel
+    return A.repeat("#", A.clamp(newLevel, 1, 6))
+  }
+
+}

@@ -60,7 +60,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.8.0.0"
+    this.appVersion := "0.8.0.2"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -101,12 +101,24 @@ class AppMarkdownClipper {
       throw error
     }
 
+    this.registerWindowGroup("markdown", "windowgroup.markdown")
+
     ; Register hotkeys
     this.registerHotkey(this.ini.getString("hotkeys", "clipper")
       , objBindMethod(this, "hotkeyClipper") )
     this.registerHotkey(this.ini.getString("hotkeys", "copyLink")
       , objBindMethod(this, "hotkeyCopyLink")
       , "ahk_group browsers")
+
+    condIncreaseHeading := this.ini.getString("hotkeys", "IncreaseHeading_when")
+    condDecreaseHeading := this.ini.getString("hotkeys", "DecreaseHeading_when")
+    this.registerHotkey(this.ini.getString("hotkeys", "IncreaseHeading")
+      , objBindMethod(this, "hotkeyChangeHeading", 1)
+      , condIncreaseHeading)
+    this.registerHotkey(this.ini.getString("hotkeys", "DecreaseHeading")
+      , objBindMethod(this, "hotkeyChangeHeading", -1)
+      , condDecreaseHeading)
+
     return this
   }
 
@@ -220,6 +232,28 @@ class AppMarkdownClipper {
       SoundBeep
     }
 
+  }
+
+  hotkeyChangeHeading(numChange) {
+    mdt := new markdownTools()
+
+    ; for apps copying the whole line with \r?\n, if nothing is selected
+    compatMode := false
+
+    if (!Clip.CopyText()) {
+      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+      return
+    }
+    text := Clip.GetText()
+    if (RegexMatch(text, "^.*\r?\n$")) {
+      Send, {HOME}+{END}
+      compatMode := true
+    }
+    converted := mdt.mdChangeHeadingLevel(Clip.GetText(), numChange)
+    if (compatMode) {
+      converted := Rtrim(converted, "`r`n")
+    }
+    Clip.Paste(converted)
   }
 
   /**
