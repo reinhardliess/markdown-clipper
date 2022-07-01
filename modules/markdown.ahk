@@ -162,7 +162,7 @@ class markdownClip {
 
 
   /**
-   * Callback: Remove link url from Markdown link, unescape Markdown
+   * Callback: Remove link url from Markdown link, remove formatting, unescape Markdown
    * @param {object} match - match object
    * @param {string} haystack - haystack
    * @returns {string} modified full match
@@ -171,8 +171,12 @@ class markdownClip {
   fn_reInlineCode(match, haystack) {
     ; OutputDebug, % match[0]
     re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+    ; remove link
     ; https://regex101.com/r/HjY0rd/2/
     buffer := re.replace(match[0], "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
+    ; remove Markdown bold/italic formatting
+    ; https://regex101.com/r/ubCNvw/2
+    buffer := re.replace(buffer, "(?<!\\)(\*|_)(.*?)\1", "$2")
     ; unescape Markdown
     ; https://regex101.com/r/Uju9Mr/2/
     return re.replace(buffer, "(\\)([\[\]\\\``\*\_\{\}\(\)#+\-\.!])", "$2")
