@@ -60,7 +60,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.8.0.2"
+    this.appVersion := "0.8.0.3"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -237,22 +237,13 @@ class AppMarkdownClipper {
   hotkeyChangeHeading(numChange) {
     mdt := new markdownTools()
 
-    ; for apps copying the whole line with \r?\n, if nothing is selected
-    compatMode := false
+    text := this.getSelection({ onNoSelection: "selectLine"})
 
-    if (!Clip.CopyText()) {
+    if (!text) {
       MsgBox, 64, % this.appTitle, % "Nothing selected!"
       return
     }
-    text := Clip.GetText()
-    if (RegexMatch(text, "^.*\r?\n$")) {
-      Send, {HOME}+{END}
-      compatMode := true
-    }
-    converted := mdt.mdChangeHeadingLevel(Clip.GetText(), numChange)
-    if (compatMode) {
-      converted := Rtrim(converted, "`r`n")
-    }
+    converted := mdt.mdChangeHeadingLevel(text, numChange)
     Clip.Paste(converted)
   }
 
@@ -389,6 +380,41 @@ class AppMarkdownClipper {
     }
 
     OutputDebug, % textToLog
+
+  }
+
+  /**
+  * Retrieves selection via clipboard
+  * @param {object} options - option object
+  * @param {string} [options.onNoSelection=""] - selectLine or selectWord
+  * @param {float} [options.timeout=0.1] - clipboard waiting timeout
+  * @returns {string | undefined} selected text
+  */
+  getSelection(options:="") {
+
+    clipTimeout  := options.hasKey("timeout") ? options.timeout : 0.1
+    noSelect     := options.onNoSelection
+
+    text := ""
+    if (Clip.CopyText(clipTimeout)) {
+      text := Clip.GetText()
+    }
+
+    ; for apps copying the whole line with \r?\n, if nothing is selected
+    compatMode := !!RegexMatch(text, "^.*\r?\n$")
+
+    if (!text || compatMode) {
+      if (noSelect = "selectLine") {
+        Send, {HOME}+{END}
+      } else if (noSelect = "selectWord") {
+        Send, ^{LEFT}^+{RIGHT}
+      }
+      if (Clip.CopyText(clipTimeout)) {
+        text := Clip.GetText()
+      }
+    }
+
+    return text
 
   }
 
