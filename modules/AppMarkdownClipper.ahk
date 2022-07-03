@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed

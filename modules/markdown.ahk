@@ -72,6 +72,8 @@ class markdownClip {
   ini := {}
   file := {}
 
+  reAny := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+
   /**
     * Constructor
     * @param {object} [props] - props object
@@ -138,24 +140,19 @@ class markdownClip {
   */
   clipperPostProcess() {
 
-    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+    mdt := new markdownTools()
 
     ; convert Setext style H1/H2 to ATX style
-    ; https://regex101.com/r/7SuDEh/2
-    buffer := re.replace(this.file.contents, "m)^(.+)\r?\n=+$", "# $1" )
-    buffer := re.replace(buffer, "m)^(.+)\r?\n-+$", "## $1" )
+    buffer := mdt.convertHeadingStyle(this.file.contents)
 
     ; remove linefeeds from link text
-    ; https://regex101.com/r/H6ooBn/1/
-    buffer := re.replace(buffer, "\[\s*(.+)\s*\](\(.+\))", "[$1]$2")
+    buffer := mdt.removeLFfromLinkText(buffer)
 
     ; replace [](link) with [#](link)
-    ; https://regex101.com/r/9VxaZh/1
-    buffer := re.replace(buffer, "m)(^.*\[)(\]\s*\(.+\))", "$1#$2" )
+    buffer := mdt.fixEmptyLinkText(buffer)
 
-    ; Inline `code`, convert [text](link) to text, unescape Markdown
-    ; https://regex101.com/r/8DmTZR/3/
-    this.file.contents := re.replace(buffer, "``[^\r?\n``]*``", objBindMethod(this, "fn_reInlineCode") )
+    ; Inline `code`, convert [text](link) to text, remove formatting, unescape Markdown
+    this.file.contents := this.reAny.replace(buffer, "``[^\r\n``]*``", objBindMethod(this, "fn_reInlineCode") )
 
     return this
   }
@@ -170,16 +167,17 @@ class markdownClip {
   */
   fn_reInlineCode(match, haystack) {
     ; OutputDebug, % match[0]
-    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+
+    mdt := new markdownTools()
+
     ; remove link
-    ; https://regex101.com/r/HjY0rd/2/
-    buffer := re.replace(match[0], "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
+    buffer := mdt.removeLinkUrl(match[0])
+
     ; remove Markdown bold/italic formatting
-    ; https://regex101.com/r/ubCNvw/2
-    buffer := re.replace(buffer, "(?<!\\)(\*|_)(.*?)\1", "$2")
+    buffer := mdt.removeFormatting(buffer)
+
     ; unescape Markdown
-    ; https://regex101.com/r/Uju9Mr/2/
-    return re.replace(buffer, "(\\)([\[\]\\\``\*\_\{\}\(\)#+\-\.!])", "$2")
+    return mdt.unescapeMarkdown(buffer)
   }
 
   /**
@@ -189,11 +187,9 @@ class markdownClip {
   */
   getHeadingLink(markdown) {
 
-    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
-
     ; https://regex101.com/r/l5Kv1H/1
     ; Test heading for link, group1 = link
-    match := re.match(markdown, "^#{1,6}.+\[.+\]\((.+)\)")
+    match := this.reAny.match(markdown, "^#{1,6}.+\[.+\]\((.+)\)")
     return match ? match[1] : ""
   }
 
@@ -260,8 +256,6 @@ class markdownClip {
   */
   InsertSourceInfo() {
 
-    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
-
     buffer := this.file.contents
     infoType := this.getSourceInfoType()
 
@@ -269,7 +263,7 @@ class markdownClip {
 
       if (infotype = "slim") {
         ; https://regex101.com/r/GEbYr6/2/
-        buffer := re.replace(buffer, "^(#{1,6}.+)", format("$1[#]({1})", this.sourceUrl))
+        buffer := this.reAny.replace(buffer, "^(#{1,6}.+)", format("$1[#]({1})", this.sourceUrl))
       } else if (infoType = "full") {
         buffer := format("## {1}[#]({2})`n`n", this.title, this.sourceUrl) buffer
       }
@@ -313,6 +307,8 @@ class markdownClip {
 
 class markdownTools {
 
+  reAny := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+
   /**
     * Increases/decreases heading level in text
     * @param {string} text - source text
@@ -321,18 +317,50 @@ class markdownTools {
   */
   mdChangeHeadingLevel(text, numChange) {
 
-    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
-
-    converted := re.replace(text, "m)^#{1,6}", objBindMethod(this, "_fn_changeHeading", numChange))
+    converted := this.reAny.replace(text, "m)^#{1,6}", objBindMethod(this, "_fn_changeHeading", numChange))
     return converted
   }
 
   _fn_changeHeading(numChange, match, haystack) {
-    ; OutputDebug, % match[0]
     newLevel := Strlen(match[0]) + numChange
-    ; newLevel := newLevel > 6 ? 6 : newLevel
-    ; newLevel := newLevel < 1 ? 1 : newLevel
     return A.repeat("#", A.clamp(newLevel, 1, 6))
   }
 
+
+  convertHeadingStyle(text) {
+    ; convert Setext style H1/H2 to ATX style
+    ; https://regex101.com/r/7SuDEh/2
+    buffer := this.reAny.replace(text, "m)^(.+)\r?\n=+$", "# $1" )
+    return this.reAny.replace(buffer, "m)^(.+)\r?\n-+$", "## $1" )
+  }
+
+  removeLFfromLinkText(text) {
+    ; remove linefeeds from link text
+    ; https://regex101.com/r/H6ooBn/1/
+    return this.reAny.replace(text, "\[\s*(.+)\s*\](\(.+\))", "[$1]$2")
+  }
+
+  fixEmptyLinkText(text) {
+    ; replace [](link) with [#](link)
+    ; https://regex101.com/r/9VxaZh/1
+    return this.reAny.replace(text, "m)(^.*\[)(\]\s*\(.+\))", "$1#$2" )
+  }
+
+  removeLinkUrl(text) {
+    ; remove link
+    ; https://regex101.com/r/HjY0rd/2/
+    return this.reAny.replace(text, "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
+  }
+
+  removeFormatting(text) {
+    ; remove Markdown bold/italic formatting
+    ; https://regex101.com/r/ubCNvw/2
+    return this.reAny.replace(text, "(?<!\\)(\*|_)(.*?)\1", "$2")
+  }
+
+  unescapeMarkdown(text) {
+    ; unescape Markdown
+    ; https://regex101.com/r/Uju9Mr/2/
+    return this.reAny.replace(text, "(\\)([\[\]\\\``\*\_\{\}\(\)#+\-\.!])", "$2")
+  }
 }
