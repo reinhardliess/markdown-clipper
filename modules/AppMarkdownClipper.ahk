@@ -243,7 +243,7 @@ class AppMarkdownClipper {
       MsgBox, 64, % this.appTitle, % "Nothing selected!"
       return
     }
-    converted := mdt.mdChangeHeadingLevel(text, numChange)
+    converted := mdt.changeHeadingLevel(text, numChange)
     Clip.Paste(converted)
   }
 

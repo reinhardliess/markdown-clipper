@@ -315,7 +315,7 @@ class markdownTools {
     * @param {integer} numChange - value of change
     * @returns {string}
   */
-  mdChangeHeadingLevel(text, numChange) {
+  changeHeadingLevel(text, numChange) {
 
     converted := this.reAny.replace(text, "m)^#{1,6}", objBindMethod(this, "_fn_changeHeading", numChange))
     return converted
