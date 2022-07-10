@@ -327,6 +327,44 @@ class markdownTools {
   }
 
 
+  /**
+    * Converts selection or non-fenced codeblock to fenced codeblock
+    * @param {string} text - text to process
+    * @returns {string} processed text
+  */
+  convertCodeBlock(text, language) {
+
+    mdt := new MarkdownTools()
+
+    lines := StrSplit(Trim(text,"`r`n"), "`r`n")
+    if (A.every(lines, objBindMethod(this.reAny, "isMatchB", "^\x20{4}"))) {
+      ; transform indented code block
+      buffer := this.reAny.replace(text, "m)^(?:\x20{4})(.+)$", "$1")
+      return format("``````{1}`r`n{2}`r`n``````", language, Trim(buffer, "`r`n"))
+    }
+
+    ; remove backticks, mainly for javascript.info
+    buffer := Trim(text, "```r`n")
+
+    ; remove unnecessary link text
+    buffer := StrReplace(buffer, "[#]", "[]")
+
+    ; remove links
+    ; https://regex101.com/r/tk4Oss/1/
+    ; buffer := this.reAny.replace(buffer, "Us)(.*)\[(.*)\](\(.+)\)(.*)", "$1$2$4")
+    buffer := this.removeLinkUrl(buffer)
+
+    ; remove formatting
+    buffer := mdt.removeFormatting(buffer)
+
+    ; unescape Markdown
+    buffer := mdt.unescapeMarkdown(buffer)
+    ; buffer := StrReplace(buffer, "\===", "===")
+
+    return format("``````{1}`r`n{2}`r`n``````", language, Trim(buffer, "`r`n"))
+
+  }
+
   convertHeadingStyle(text) {
     ; convert Setext style H1/H2 to ATX style
     ; https://regex101.com/r/7SuDEh/2
@@ -349,7 +387,8 @@ class markdownTools {
   removeLinkUrl(text) {
     ; remove link
     ; https://regex101.com/r/HjY0rd/2/
-    return this.reAny.replace(text, "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
+    ; return this.reAny.replace(text, "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
+    return this.reAny.replace(text, "Us)(.*)\[(.+)\](\(.+)\)(.*)", "$1$2$4")
   }
 
   removeFormatting(text) {

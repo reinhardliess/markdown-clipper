@@ -6,7 +6,7 @@ Markdown Clipper is an app enabling users to clip a selection from any app that 
 
 This makes it a useful tool, especially if you use Markdown-based note-taking apps.
 
-All apps that copy HTML format to the clipboard are supported: Web browsers, Email clients, Text processors, Windows HTML Help, etc.
+All apps that copy HTML format to the clipboard are supported: Web browsers, email clients, text processors, Windows HTML Help, etc.
 
 The program performing the actual conversion can be [configured](#conversion-options).
 
@@ -20,7 +20,7 @@ All possible configuration settings are documented in the default file.
 
 ### Conversion Options
 
-Every command line program that converts HTML to Markdown can be used with Markdown Clipper, the default is [to-markdown-cli](https://github.com/ff6347/to-markdown-cli#readme), because it creates IMO the cleanest Markdown output without any unnecessary HTML tags.  
+Every command line program that converts HTML to Markdown can be used with Markdown Clipper, the default is [to-markdown-cli](https://github.com/ff6347/to-markdown-cli#readme), because it creates IMO the cleanest Markdown output without any unnecessary HTML tags.
 It requires the installation of Node for Windows though, see [Installation](#installation).
 
 ```ini
@@ -47,12 +47,22 @@ CmdFromHtml= pandoc --wrap=none -r html -t markdown_github-native_divs-native_sp
 
 ### Hotkeys
 
-The defaults are as follows:
+- All hotkeys that work on Markdown text can be made local by restricting the hotkey scope to the `Markdown` window group (otherwise the hotkeys will be global). Example:
 
-| Function/Feature                                                 | Default Hotkey |
-| ---------------------------------------------------------------- | -------------- |
-| Clipping HTML to Markdown                                        | Alt+Ctrl+M     |
-| Copy address & page title or selection as Markdown (Web browser) | unassigned     |
+  ```ini
+  IncreaseHeading=^#Numpad2
+  IncreaseHeading_when= ahk_group markdown
+  ```
+
+All `_when` settings can use any valid [Wintitle](https://www.autohotkey.com/docs/misc/WinTitle.htm) Autohotkey condition.  
+<br>
+| Function/Feature                                                           | Default Hotkey | Scope                        |
+| -------------------------------------------------------------------------- | -------------- | ---------------------------- |
+| Clipping HTML to Markdown                                                  | Alt+Ctrl+M     | Global                       |
+| [Copy address/title as Markdown](#copy-address-amp-page-title-as-markdown) | unassigned     | Browsers window group        |
+| [Increase heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
+| [Decrease heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
+| [Convert to fenced code block](#converts-selection-to-fenced-code-block)   | unassigned     | Global/Markdown window group |
 
 Hotkeys can be customized. Check out the [List of Keys](https://www.autohotkey.com/docs/KeyList.htm) and [Hotkey Modifier Symbols](https://www.autohotkey.com/docs/Hotkeys.htm#Symbols).
 
@@ -74,6 +84,27 @@ Clipper=!^m
 ; unassigned
 CopyLink=
 ```
+
+### Additional Features
+
+#### Copy Address and Page Title as Markdown
+
+- Copies url and website title as Markdown. If there's a selection, the selection will be used instead of the page title
+- Local hotkey, restricted to window group `Browsers`
+
+#### Increase/Decrease heading level
+
+- Increases/decreases the heading level of the current line (no selection necessary) or a multi-line selection
+
+#### Convert Selection to Fenced Code Block
+
+1. Converts selected indented code block to fenced code block
+2. Converts selection to fenced code block with the following post-processing
+    - Remove links keeping only the link text
+    - Remove bold/italics formatting
+    - Unescape Markdown
+
+A language can be input (and the default language can be configured)
 
 ### Output File
 

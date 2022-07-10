@@ -42,6 +42,9 @@ test_markdownClip()
 assert.group("MarkdownFile")
 test_markdownFile()
 
+assert.group("MarkdownTools")
+test_markdownTools()
+
 assert.group("App Class")
 test_appClass()
 
@@ -212,6 +215,16 @@ test_markdownFile() {
   assert.test(oldClip.appendContents("`n`n", newClip), expectedClip)
 }
 
+test_markdownTools() {
+
+  mdt := new markdownTools()
+
+  assert.label("should convert a convential code block into a fenced code block")
+  actual := mdt.convertCodeBlock(loadText("block"), "css")
+  expected := loadText("block-converted")
+  assert.test(actual, expected)
+}
+
 ; -- App Class --
 
 test_appClass() {
@@ -276,4 +289,10 @@ loadJSON(filename) {
     throw Exception(fullFileName " is not a valid JSON file.")
   }
   return JSON.parse(contents)
+}
+
+loadText(filename) {
+  fullFileName := A_ScriptDir "\text\" filename ".txt"
+  contents := U.fileRead(fullFileName)
+  return contents
 }

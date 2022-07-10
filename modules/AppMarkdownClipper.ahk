@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -60,7 +60,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.8.0.3"
+    this.appVersion := "0.9.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -118,6 +118,13 @@ class AppMarkdownClipper {
     this.registerHotkey(this.ini.getString("hotkeys", "DecreaseHeading")
       , objBindMethod(this, "hotkeyChangeHeading", -1)
       , condDecreaseHeading)
+
+    condConvertCodeBlock := this.ini.getString("hotkeys", "ConvertCodeblock_when")
+    this.registerHotkey(this.ini.getString("hotkeys", "ConvertCodeblock")
+      , objBindMethod(this, "hotkeyConvertCodeblock")
+      , condConvertCodeBlock)
+
+
 
     return this
   }
@@ -245,6 +252,34 @@ class AppMarkdownClipper {
     }
     converted := mdt.changeHeadingLevel(text, numChange)
     Clip.Paste(converted)
+  }
+
+  hotkeyConvertCodeBlock() {
+    static language
+
+    if (!language) {
+      language := this.ini.getString("ConvertCodeBlock", "DefaultLanguage")
+    }
+
+    mdt := new MarkdownTools()
+
+    InputBox, language, Markdown: Convert To Code Block, Enter language,, 300, 130,,, Locale, , %language%
+    if (ErrorLevel = 1) {
+      Return
+    }
+    KeyWait, Enter
+
+    text := this.getSelection()
+
+    if (!text) {
+      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+      return
+    }
+
+    if (converted := mdt.convertCodeBlock(text, language)) {
+      Clip.Paste(converted)
+    }
+
   }
 
   /**
@@ -391,6 +426,10 @@ class AppMarkdownClipper {
   * @returns {string | undefined} selected text
   */
   getSelection(options:="") {
+
+    if (!options) {
+      options := {}
+    }
 
     clipTimeout  := options.hasKey("timeout") ? options.timeout : 0.1
     noSelect     := options.onNoSelection
