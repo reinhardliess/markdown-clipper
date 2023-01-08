@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -28,6 +28,8 @@ class AppMarkdownClipper {
   )"
 
   ; instance variables
+
+  	re := new rd_RegExp()
 
     /**
     * Constructor
@@ -60,7 +62,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.9.0"
+    this.appVersion := "0.10.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -103,18 +105,21 @@ class AppMarkdownClipper {
 
     this.registerWindowGroup("markdown", "windowgroup.markdown")
 
-    ; Register hotkeys
+    ; Register main hotkeys
     this.registerHotkey(this.ini.getString("hotkeys", "clipper")
       , objBindMethod(this, "hotkeyClipper") )
     this.registerHotkey(this.ini.getString("hotkeys", "copyLink")
       , objBindMethod(this, "hotkeyCopyLink")
       , "ahk_group browsers")
 
+    ; TODO: extract to method
+    ; Additional Markdown functions/hotkeys
     condIncreaseHeading := this.ini.getString("hotkeys", "IncreaseHeading_when")
-    condDecreaseHeading := this.ini.getString("hotkeys", "DecreaseHeading_when")
     this.registerHotkey(this.ini.getString("hotkeys", "IncreaseHeading")
       , objBindMethod(this, "hotkeyChangeHeading", 1)
       , condIncreaseHeading)
+
+    condDecreaseHeading := this.ini.getString("hotkeys", "DecreaseHeading_when")
     this.registerHotkey(this.ini.getString("hotkeys", "DecreaseHeading")
       , objBindMethod(this, "hotkeyChangeHeading", -1)
       , condDecreaseHeading)
@@ -124,6 +129,10 @@ class AppMarkdownClipper {
       , objBindMethod(this, "hotkeyConvertCodeblock")
       , condConvertCodeBlock)
 
+    condCreateLink := this.ini.getString("hotkeys", "CreateLink_when")
+    this.registerHotkey(this.ini.getString("hotkeys", "CreateLink")
+      , objBindMethod(this, "hotkeyCreateLink")
+      , condCreateLink)
 
     ; Capslock combo hotkeys
     ; TODO: Create method ⬇
@@ -247,6 +256,15 @@ class AppMarkdownClipper {
       SoundBeep
     }
 
+  }
+
+  hotkeyCreateLink() {
+    linkUrl := Clipboard
+    text := this.getSelection({ onNoSelection: "selectWord"})
+
+    Clip.Paste(format("[{1}]({2})", text, linkUrl))
+    Sleep, 300
+    clipboard := linkUrl
   }
 
   hotkeyChangeHeading(numChange) {
