@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -125,6 +125,14 @@ class AppMarkdownClipper {
       , condConvertCodeBlock)
 
 
+    ; Capslock combo hotkeys
+    ; TODO: Create method ⬇
+    sectionHotkeys := this.ini.user.getSection("Hotkeys")
+    ; https://regex101.com/r/Hu3Nqm/latest
+    if (A.some(sectionHotkeys, objBindMethod(this.re, "isMatchB", "i)(?<!when)=\s*Capslock &"))) {
+      ; If Capslock special hotkey is used, switch off Capslock
+      SetCapsLockState, AlwaysOff
+    }
 
     return this
   }
