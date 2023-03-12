@@ -134,14 +134,7 @@ class AppMarkdownClipper {
       , objBindMethod(this, "hotkeyCreateLink")
       , condCreateLink)
 
-    ; Capslock combo hotkeys
-    ; TODO: Create method ⬇
-    sectionHotkeys := this.ini.user.getSection("Hotkeys")
-    ; https://regex101.com/r/Hu3Nqm/latest
-    if (A.some(sectionHotkeys, objBindMethod(this.re, "isMatchB", "i)(?<!when)=\s*Capslock &"))) {
-      ; If Capslock special hotkey is used, switch off Capslock
-      SetCapsLockState, AlwaysOff
-    }
+    this.processCapslockHotkeys()
 
     return this
   }
@@ -356,6 +349,16 @@ class AppMarkdownClipper {
       return Clip.GetText()
     } else {
       Throw Exception("Clipboard: Nothing to copy", -2)
+    }
+  }
+
+  ; Capslock combo hotkeys
+  processCapslockHotkeys() {
+    sectionHotkeys := this.ini.user.getSection("Hotkeys")
+    ; https://regex101.com/r/Hu3Nqm/latest
+    if (A.some(sectionHotkeys, objBindMethod(this.re, "isMatchB", "i)(?<!when)=\s*Capslock &"))) {
+      ; If Capslock special hotkey is used, switch off Capslock
+      SetCapsLockState, AlwaysOff
     }
   }
 
