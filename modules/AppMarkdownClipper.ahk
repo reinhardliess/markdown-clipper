@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -296,7 +296,7 @@ class AppMarkdownClipper {
     }
 
     if (converted := mdt.convertCodeBlock(text, language)) {
-      Clip.Paste(converted)
+      Clip.Paste(converted "`n")
     }
 
   }
