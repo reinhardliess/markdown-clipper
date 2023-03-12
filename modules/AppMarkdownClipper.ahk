@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -62,7 +62,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.10.0"
+    this.appVersion := "0.11.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -106,33 +106,13 @@ class AppMarkdownClipper {
     this.registerWindowGroup("markdown", "windowgroup.markdown")
 
     ; Register main hotkeys
-    this.registerHotkey(this.ini.getString("hotkeys", "clipper")
-      , objBindMethod(this, "hotkeyClipper") )
-    this.registerHotkey(this.ini.getString("hotkeys", "copyLink")
-      , objBindMethod(this, "hotkeyCopyLink")
-      , "ahk_group browsers")
+    this.registerCustomHotkey("Clipper", "hotkeyClipper")
+    this.registerCustomHotkey("CopyLink", "hotkeyCopyLink")
 
-    ; TODO: extract to method
-    ; Additional Markdown functions/hotkeys
-    condIncreaseHeading := this.ini.getString("hotkeys", "IncreaseHeading_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "IncreaseHeading")
-      , objBindMethod(this, "hotkeyChangeHeading", 1)
-      , condIncreaseHeading)
-
-    condDecreaseHeading := this.ini.getString("hotkeys", "DecreaseHeading_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "DecreaseHeading")
-      , objBindMethod(this, "hotkeyChangeHeading", -1)
-      , condDecreaseHeading)
-
-    condConvertCodeBlock := this.ini.getString("hotkeys", "ConvertCodeblock_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "ConvertCodeblock")
-      , objBindMethod(this, "hotkeyConvertCodeblock")
-      , condConvertCodeBlock)
-
-    condCreateLink := this.ini.getString("hotkeys", "CreateLink_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "CreateLink")
-      , objBindMethod(this, "hotkeyCreateLink")
-      , condCreateLink)
+    this.registerCustomHotkey("IncreaseHeading", "hotkeyChangeHeading", 1)
+    this.registerCustomHotkey("DecreaseHeading", "hotkeyChangeHeading", -1)
+    this.registerCustomHotkey("ConvertCodeblock", "hotkeyConvertCodeblock")
+    this.registerCustomHotkey("CreateLink", "hotkeyCreateLink")
 
     this.processCapslockHotkeys()
 
@@ -383,6 +363,20 @@ class AppMarkdownClipper {
       ; clear condition
       Hotkey, IfWinActive
     }
+  }
+
+  /**
+  * Registers custom hotkey
+  * @param {string} iniKey - key in [hotkeys]
+  * @param {string} handler - name of handler method
+  * @param {any*}   args - arguments to pass to handler
+  * @returns {void}
+  */
+  registerCustomHotkey(iniKey, handler, args*) {
+    condition := this.ini.getString("hotkeys", iniKey "_when")
+    this.registerHotkey(this.ini.getString("hotkeys", iniKey)
+    , objBindMethod(this, handler, args*)
+    , condition)
   }
 
   /**
