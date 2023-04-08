@@ -336,7 +336,7 @@ class markdownTools {
 
     mdt := new MarkdownTools()
 
-    lines := StrSplit(Trim(text,"`r`n"), "`r`n")
+    lines := StrSplit(Trim(text,"`r`n"), ["`r`n", "`n"])
     if (A.every(lines, objBindMethod(this.reAny, "isMatchB", "^\x20{4}"))) {
       ; transform indented code block
       buffer := this.reAny.replace(text, "m)^(?:\x20{4})(.+)$", "$1")
