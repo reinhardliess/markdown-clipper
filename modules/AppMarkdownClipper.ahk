@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -132,7 +132,7 @@ class AppMarkdownClipper {
     WinGetTitle, title, A
 
     if (!Clip.Copy() ) {
-      MsgBox, 48, % this.appTitle, % AppMarkdownClipper.MSG_NO_SELECTION
+      this.displayMessageNoSelection()
       return
     }
 
@@ -189,6 +189,14 @@ class AppMarkdownClipper {
     this.clipperProcessConfirmation(outputFileName)
   }
 
+  displayMessageNoSelection() {
+    MsgBox, 48, % this.appTitle, % AppMarkdownClipper.MSG_NO_SELECTION
+  }
+
+  trimText(text) {
+    Return Trim(text, "`r`n`t ")
+  }
+
   clipperProcessConfirmation(outputFileName) {
 
     confirmation := this.ini.getString("clipper", "confirmation")
@@ -209,8 +217,8 @@ class AppMarkdownClipper {
     text := this.getSelection({ onNoSelection: "selectLine"})
     ; text := Rtrim(text, "`r`n")
 
-    if (!text) {
-      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+    if (!this.trimText(text)) {
+      this.displayMessageNoSelection()
       return
     }
 
@@ -265,8 +273,8 @@ class AppMarkdownClipper {
 
     text := this.getSelection({ onNoSelection: "selectLine"})
 
-    if (!text) {
-      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+    if (!this.trimText(text)) {
+      this.displayMessageNoSelection()
       return
     }
     converted := mdt.changeHeadingLevel(text, numChange)
@@ -291,7 +299,7 @@ class AppMarkdownClipper {
     text := this.getSelection()
 
     if (!text) {
-      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+      this.displayMessageNoSelection()
       return
     }
 
