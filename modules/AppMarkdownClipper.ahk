@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Central management class for "Markdown Clipper"
  * Copyright(c) 2021-2022 Reinhard Liess
  * MIT Licensed
@@ -113,6 +113,7 @@ class AppMarkdownClipper {
     this.registerCustomHotkey("DecreaseHeading", "hotkeyChangeHeading", -1)
     this.registerCustomHotkey("ConvertCodeblock", "hotkeyConvertCodeblock")
     this.registerCustomHotkey("CreateLink", "hotkeyCreateLink")
+    this.registerCustomHotkey("ConvertToUL", "hotkeyUL")
 
     this.processCapslockHotkeys()
 
@@ -200,7 +201,26 @@ class AppMarkdownClipper {
 
   }
 
+  /**
+   * Hotkey handler for converting selection into an unordered list
+  */
+  hotkeyUL() {
 
+    text := this.getSelection({ onNoSelection: "selectLine"})
+    ; text := Rtrim(text, "`r`n")
+
+    if (!text) {
+      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+      return
+    }
+
+    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+    converted := re.replace(text, "m)^(.*)$", "- $1")
+    converted := re.replace(converted, "- $")
+
+    Clip.Paste(converted)
+
+  }
 
   /**
    * Hotkey handler for copying url as markdown
