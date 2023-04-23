@@ -28,7 +28,6 @@ class AppMarkdownClipper {
   )"
 
   ; instance variables
-
   	re := new rd_RegExp()
 
     /**
@@ -62,7 +61,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.11.0"
+    this.appVersion := "0.12.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -131,6 +130,8 @@ class AppMarkdownClipper {
     WinGet, appPath, ProcessPath, A
     WinGetTitle, title, A
 
+    this.ClipSave()
+
     if (!Clip.Copy() ) {
       this.displayMessageNoSelection()
       return
@@ -138,11 +139,13 @@ class AppMarkdownClipper {
 
     if !(html := Clip.GetHtml()) {
       Msgbox, 48, % this.appTitle, % format(AppMarkdownClipper.ERR_HTML_NO_DATA, title)
+      this.ClipRestore()
       return
     }
 
     header := Clip.parseHtmlHeader(html)
     if (!A.isInteger(header.StartFragment)) {
+      this.ClipRestore()
       this.showErrorMessage(AppMarkdownClipper.ERR_HTML_NO_DATA, title)
     }
 
@@ -179,6 +182,8 @@ class AppMarkdownClipper {
       .clipperPostProcess()
       .InsertSourceInfo()
 
+    this.ClipRestore(0)
+
     if (this.clip.ini.clipboardOutput = "copy") {
       Clip.setText(this.clip.file.contents)
     }
@@ -210,12 +215,39 @@ class AppMarkdownClipper {
   }
 
   /**
+  * Saves clipboard contents
+  */
+  ClipSave() {
+  	; this variable must be global or saving the clipboard doesn't work
+    global gClipSaved
+
+    gClipSaved := ClipboardAll
+  }
+
+  /**
+  * Restores previously saved clipboard after optional delay
+  * @param {integer} [nDelay=0] - delay in ms
+  */
+  ClipRestore(nDelay:=500) {
+    ; this variable must be global or saving the clipboard doesn't work
+    global gClipSaved
+
+    ; yield to other processes
+    Sleep, 0
+    if (nDelay) {
+      Sleep, nDelay
+    }
+    clipboard := gClipSaved
+    gClipSaved := ""
+  }
+
+  /**
    * Hotkey handler for converting selection into an unordered list
   */
   hotkeyUL() {
 
+    this.ClipSave()
     text := this.getSelection({ onNoSelection: "selectLine"})
-    ; text := Rtrim(text, "`r`n")
 
     if (!this.trimText(text)) {
       this.displayMessageNoSelection()
@@ -224,10 +256,11 @@ class AppMarkdownClipper {
 
     re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
     converted := re.replace(text, "m)^(.*)$", "- $1")
+    ; remove unwanted list item created by LF
     converted := re.replace(converted, "- $")
 
     Clip.Paste(converted)
-
+    this.ClipRestore()
   }
 
   /**
@@ -263,7 +296,7 @@ class AppMarkdownClipper {
     linkUrl := Clipboard
     text := this.getSelection({ onNoSelection: "selectWord"})
 
-    Clip.Paste(format("[{1}]({2})", text, linkUrl))
+    Clip.Paste(format("[{}]({})", text, linkUrl))
     Sleep, 300
     clipboard := linkUrl
   }
@@ -271,14 +304,17 @@ class AppMarkdownClipper {
   hotkeyChangeHeading(numChange) {
     mdt := new markdownTools()
 
+    this.ClipSave()
     text := this.getSelection({ onNoSelection: "selectLine"})
 
     if (!this.trimText(text)) {
       this.displayMessageNoSelection()
+      this.ClipRestore()
       return
     }
     converted := mdt.changeHeadingLevel(text, numChange)
     Clip.Paste(converted)
+    this.ClipRestore()
   }
 
   hotkeyConvertCodeBlock() {
@@ -296,17 +332,17 @@ class AppMarkdownClipper {
     }
     KeyWait, Enter
 
+    this.ClipSave()
     text := this.getSelection()
-
-    if (!text) {
-      this.displayMessageNoSelection()
-      return
-    }
 
     if (converted := mdt.convertCodeBlock(text, language)) {
       Clip.Paste(converted "`n")
+      ; Create empty code block, if no selection and set new cursor position
+      if (!this.trimText(text)) {
+        Send, {up 2}
+      }
     }
-
+    this.ClipRestore()
   }
 
   /**
