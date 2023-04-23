@@ -10,6 +10,8 @@ All apps that copy HTML format to the clipboard are supported: Web browsers, ema
 
 The program performing the actual conversion can be [configured](#conversion-options).
 
+Also, a number of [additional hotkeys](#hotkeys) are supported to perform various actions on Markdown text.
+
 Installation instructions are [here](#installation).
 
 ## Configuration
@@ -56,14 +58,15 @@ CmdFromHtml= pandoc --wrap=none -r html -t markdown_github-native_divs-native_sp
 
 All `_when` settings can use any valid [Wintitle](https://www.autohotkey.com/docs/misc/WinTitle.htm) Autohotkey condition.  
 <br>
-| Function/Feature                                                           | Default Hotkey | Scope                        |
-| -------------------------------------------------------------------------- | -------------- | ---------------------------- |
-| Clipping HTML to Markdown                                                  | Alt+Ctrl+M     | Global                       |
-| [Copy address/title as Markdown](#copy-address-and-page-title-as-markdown) | unassigned     | Browsers window group        |
-| [Increase heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
-| [Decrease heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
-| [Convert to fenced code block](#convert-selection-to-fenced-code-block)    | unassigned     | Global/Markdown window group |
-| Turn selection into unordered list                                         | unassigned     | Global/Markdown window group |
+| Function/Feature                                                            | Default Hotkey | Scope                        |
+| --------------------------------------------------------------------------- | -------------- | ---------------------------- |
+| Clipping HTML to Markdown                                                   | Alt+Ctrl+M     | Global                       |
+| [Copy address/title as Markdown](#copy-address-and-page-title-as-markdown)  | unassigned     | Browsers window group        |
+| [Create Markdown link from clipboard](#create-markdown-link-from-clipboard) | unassigned     | Global/Markdown window group |
+| [Increase heading level](#increasedecrease-heading-level)                   | unassigned     | Global/Markdown window group |
+| [Decrease heading level](#increasedecrease-heading-level)                   | unassigned     | Global/Markdown window group |
+| [Convert to fenced code block](#convert-selection-to-fenced-code-block)     | unassigned     | Global/Markdown window group |
+| Turn selection into unordered list                                          | unassigned     | Global/Markdown window group |
 
 Hotkeys can be customized. Check out the [List of Keys](https://www.autohotkey.com/docs/KeyList.htm) and [Hotkey Modifier Symbols](https://www.autohotkey.com/docs/Hotkeys.htm#Symbols).
 
@@ -93,6 +96,10 @@ CopyLink=
 - Copies URL and website title as Markdown. If there's a selection, the selection will be used instead of the page title
 - Local hotkey, restricted to window group `Browsers`
 
+#### Create Markdown Link from Clipboard
+
+- Uses current selection as link text and clipboard contents as link URL to create a Markdown link
+
 #### Increase/Decrease heading level
 
 - Increases/decreases the heading level of the current line (no selection necessary) or a multi-line selection
@@ -117,7 +124,7 @@ Default:
 ```ini
 ; change in user.ini
 [Clipper]
-savePath=%USERPROFILE%\documents\markdown-clipper\${source}-${title}.md
+savePath=%USERPROFILE%\documents\markdown-clipper\\${source}-${title}.md
 ```
 
 |               | Source          | Title             |
