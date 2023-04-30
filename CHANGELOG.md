@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- markdownlint-disable MD024 -->
 
-## 0.12.0 / 2023-04-23
+## 0.12.0 / 2023-04-30
 
 * Enable Capslock as a modifier
 * Add hotkey to turn selection into an unordered list

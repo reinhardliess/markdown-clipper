@@ -1,0 +1,6 @@
+Loop
+  {
+      MyString := StrReplace(MyString, "\``r``n\``r``n", "\``r``n", Count)
+      if (Count = 0)  _; No more replacements needed._
+          break
+  }

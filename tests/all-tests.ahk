@@ -219,6 +219,13 @@ test_markdownTools() {
 
   mdt := new markdownTools()
 
+  block := loadText("block-urls")
+  expected := loadText("block-urls-converted")
+
+  assert.label("should remove link urls from Markdown text")
+  actual := mdt.removeLinkUrl(block)
+  assert.test(actual, expected)
+
   assert.label("should convert a convential code block into a fenced code block")
   actual := mdt.convertCodeBlock(loadText("block"), "css")
   expected := loadText("block-converted")

@@ -1,0 +1,6 @@
+[Loop](https://www.autohotkey.com/docs/v1/lib/Loop.htm)
+  {
+      MyString := [StrReplace](https://www.autohotkey.com/docs/v1/lib/StrReplace.htm)(MyString, "\``r``n\``r``n", "\``r``n", Count)
+      [if](https://www.autohotkey.com/docs/v1/lib/IfExpression.htm) (Count = 0)  _; No more replacements needed._
+          [break](https://www.autohotkey.com/docs/v1/lib/Break.htm)
+  }
