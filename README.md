@@ -93,7 +93,10 @@ CopyLink=
 
 #### Copy Address and Page Title as Markdown
 
-- Copies URL and website title as Markdown. If there's a selection, the selection will be used instead of the page title
+- Copies URL and website title as Markdown
+  - If there's a selection, the selection will be used instead of the page title
+  - If the config setting `CopyLinkToSelection= true`, the link to the selection will be copied (works only on Chromium browsers)
+  - The config setting `LinkPrefix` adds a prefix to be prepended to the Markdown link, e.g. to create Markdown bullets (see `default.ini` for syntax)
 - Local hotkey, restricted to window group `Browsers`
 
 #### Create Markdown Link from Clipboard
@@ -150,3 +153,4 @@ Some types of mandatory post-processing are performed:
 - Run the `markdown-clipper` executable
 
 \* if you plan on using `to-markdown-cli`, see [Conversion Options](#conversion-options)
+

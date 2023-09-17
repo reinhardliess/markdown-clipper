@@ -61,7 +61,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.12.0"
+    this.appVersion := "0.13.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -268,15 +268,23 @@ class AppMarkdownClipper {
    * Uses selection as title if available
   */
   hotkeyCopyLink() {
-    link := "", title := ""
+    link := "", linkPrefix := "", linkSuffix := "", title := ""
 
     if (Clip.CopyText()) {
       title := Clip.GetText()
+      if (this.ini.getBoolean("CopyLink", "CopyLinkToSelection")) {
+        linkSuffix := "#:~:text=" U.uriEncode(title)
+      }
     }
 
     if (!link) {
       link := this.getUrlFromBrowser()
+      if (!link) {
+        this.showErrorMessage("The link of the website couldn't be retrieved.")
+      }
     }
+
+    linkPrefix := Rtrim(this.ini.getString("CopyLink", "LinkPrefix"), "``" )
 
     if (!title) {
       WinGetTitle, title, A
@@ -284,7 +292,7 @@ class AppMarkdownClipper {
     }
 
     ; write link back to clipboard as markdown
-    Clip.SetText(format("[{1}]({2})", title, link))
+    Clip.SetText(format("{1}[{2}]({3})", linkPrefix, title, link linkSuffix))
 
     if (this.ini.getString("CopyLink", "confirmation") = "beep") {
       SoundBeep
