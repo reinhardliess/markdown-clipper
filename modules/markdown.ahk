@@ -386,7 +386,7 @@ class markdownTools {
     ; https://regex101.com/r/tk4Oss/latest/
     ; return this.reAny.replace(text, "m)\[(.+)\](\(.+?)\)(.*)", "$1$3")
     ; return this.reAny.replace(text, "m)\[(.+)\](\([^)]+)\)(.*)", "$1$3")
-    return this.reAny.replace(text, "m)\[([^\]]+)\]\([^)]+\)", "$1$3")
+    return this.reAny.replace(text, "m)\[([^\]]+)\]\([^)]+\)x", "$1$3")
   }
 
   removeFormatting(text) {
