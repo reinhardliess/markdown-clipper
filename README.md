@@ -59,10 +59,10 @@ All `_when` settings can use any valid [Wintitle](https://www.autohotkey.com/doc
 | Function/Feature                                                           | Default Hotkey | Scope                        |
 | -------------------------------------------------------------------------- | -------------- | ---------------------------- |
 | Clipping HTML to Markdown                                                  | Alt+Ctrl+M     | Global                       |
-| [Copy address/title as Markdown](#copy-address-amp-page-title-as-markdown) | unassigned     | Browsers window group        |
+| [Copy address/title as Markdown](#copy-address-and-page-title-as-markdown) | unassigned     | Browsers window group        |
 | [Increase heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
 | [Decrease heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
-| [Convert to fenced code block](#converts-selection-to-fenced-code-block)   | unassigned     | Global/Markdown window group |
+| [Convert to fenced code block](#convert-selection-to-fenced-code-block)   | unassigned     | Global/Markdown window group |
 
 Hotkeys can be customized. Check out the [List of Keys](https://www.autohotkey.com/docs/KeyList.htm) and [Hotkey Modifier Symbols](https://www.autohotkey.com/docs/Hotkeys.htm#Symbols).
 
