@@ -52,6 +52,7 @@ CmdFromHtml= pandoc --wrap=none -r html -t markdown_github-native_divs-native_sp
 - All hotkeys that work on Markdown text can be made local by restricting the hotkey scope to the `Markdown` window group (otherwise the hotkeys will be global). Example:
 
   ```ini
+  ; Ctrl+Win+Numpad2
   IncreaseHeading=^#Numpad2
   IncreaseHeading_when= ahk_group markdown
   ```
@@ -153,4 +154,3 @@ Some types of mandatory post-processing are performed:
 - Run the `markdown-clipper` executable
 
 \* if you plan on using `to-markdown-cli`, see [Conversion Options](#conversion-options)
-
