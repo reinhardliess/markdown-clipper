@@ -10,6 +10,8 @@ All apps that copy HTML format to the clipboard are supported: Web browsers, ema
 
 The program performing the actual conversion can be [configured](#conversion-options).
 
+Also, a number of [additional hotkeys](#hotkeys) are supported to perform various actions on Markdown text.
+
 Installation instructions are [here](#installation).
 
 ## Configuration
@@ -21,7 +23,7 @@ All possible configuration settings are documented in the default file.
 ### Conversion Options
 
 Every command line program that converts HTML to Markdown can be used with Markdown Clipper, the default is [to-markdown-cli](https://github.com/ff6347/to-markdown-cli#readme), because it creates IMO the cleanest Markdown output without any unnecessary HTML tags.
-It requires the installation of Node for Windows though, see [Installation](#installation).
+It requires the installation of Node for Windows, though, see [Installation](#installation).
 
 ```ini
 ; HTML to Markdown program/script to execute
@@ -41,7 +43,7 @@ CmdFromHtml= pandoc --wrap=none -r html -t markdown_github-native_divs-native_sp
 | to-markdown-cli             | Pandoc                                                                                                      |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Needs `Node.js`             | Is somewhat faster (machine-dependant)                                                                      |
-| Creates very clean Markdown | Adds sometimes HTML tags you might not want and the clipped snippet might look more like HTML than Markdown |
+| Creates very clean Markdown | Sometimes Adds HTML tags you might not want, and the clipped snippet might look more like HTML than Markdown |
 | Complex tables → HTML table | Often creates beautiful Markdown tables                                                                     |
 |                             | Very configurable (e.g. supports Markdown reference links)                                                  |
 
@@ -50,19 +52,22 @@ CmdFromHtml= pandoc --wrap=none -r html -t markdown_github-native_divs-native_sp
 - All hotkeys that work on Markdown text can be made local by restricting the hotkey scope to the `Markdown` window group (otherwise the hotkeys will be global). Example:
 
   ```ini
+  ; Ctrl+Win+Numpad2
   IncreaseHeading=^#Numpad2
   IncreaseHeading_when= ahk_group markdown
   ```
 
 All `_when` settings can use any valid [Wintitle](https://www.autohotkey.com/docs/misc/WinTitle.htm) Autohotkey condition.  
 <br>
-| Function/Feature                                                           | Default Hotkey | Scope                        |
-| -------------------------------------------------------------------------- | -------------- | ---------------------------- |
-| Clipping HTML to Markdown                                                  | Alt+Ctrl+M     | Global                       |
-| [Copy address/title as Markdown](#copy-address-and-page-title-as-markdown) | unassigned     | Browsers window group        |
-| [Increase heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
-| [Decrease heading level](#increasedecrease-heading-level)                  | unassigned     | Global/Markdown window group |
-| [Convert to fenced code block](#convert-selection-to-fenced-code-block)   | unassigned     | Global/Markdown window group |
+| Function/Feature                                                            | Default Hotkey | Scope                        |
+| --------------------------------------------------------------------------- | -------------- | ---------------------------- |
+| Clipping HTML to Markdown                                                   | Alt+Ctrl+M     | Global                       |
+| [Copy address/title as Markdown](#copy-address-and-page-title-as-markdown)  | unassigned     | Browsers window group        |
+| [Create Markdown link from clipboard](#create-markdown-link-from-clipboard) | unassigned     | Global/Markdown window group |
+| [Increase heading level](#increasedecrease-heading-level)                   | unassigned     | Global/Markdown window group |
+| [Decrease heading level](#increasedecrease-heading-level)                   | unassigned     | Global/Markdown window group |
+| [Convert to fenced code block](#convert-selection-to-fenced-code-block)     | unassigned     | Global/Markdown window group |
+| Turn selection into unordered list                                          | unassigned     | Global/Markdown window group |
 
 Hotkeys can be customized. Check out the [List of Keys](https://www.autohotkey.com/docs/KeyList.htm) and [Hotkey Modifier Symbols](https://www.autohotkey.com/docs/Hotkeys.htm#Symbols).
 
@@ -89,8 +94,15 @@ CopyLink=
 
 #### Copy Address and Page Title as Markdown
 
-- Copies url and website title as Markdown. If there's a selection, the selection will be used instead of the page title
+- Copies URL and website title as Markdown
+  - If there's a selection, the selection will be used instead of the page title
+  - If the config setting `CopyLinkToSelection= true`, the link to the selection will be copied (works only on Chromium browsers)
+  - The config setting `LinkPrefix` adds a prefix to be prepended to the Markdown link, e.g. to create Markdown bullets (see `default.ini` for syntax)
 - Local hotkey, restricted to window group `Browsers`
+
+#### Create Markdown Link from Clipboard
+
+- Uses current selection as link text and clipboard contents as link URL to create a Markdown link
 
 #### Increase/Decrease heading level
 
@@ -98,34 +110,35 @@ CopyLink=
 
 #### Convert Selection to Fenced Code Block
 
-1. Converts selected indented code block to fenced code block
-2. Converts selection to fenced code block with the following post-processing
-    - Remove links keeping only the link text
-    - Remove bold/italics formatting
-    - Unescape Markdown
+- Converts selected indented code block to fenced code block
+- Converts selection to fenced code block with the following post-processing
+  - Remove links, keeping only the link text
+  - Remove bold/italics formatting
+  - Unescape Markdown
+- If there's no selection, an empty code block in the selected language is pasted
 
 A language can be input (and the default language can be configured)
 
 ### Output File
 
-The file/path name for the generated Markdown output file can be customized, Windows environment variables are supported. There are two internal variables, `${source}` and `${title}`, that will be expanded when the file is created, if the file already exists the new clipped content will be appended.
+The file/path name for the generated Markdown output file can be customized, Windows environment variables are supported. There are two internal variables, `${source}` and `${title}`, that will be expanded when the file is created, if the file already exists, the new clipped content will be appended.
 
 Default:
 
 ```ini
 ; change in user.ini
 [Clipper]
-savePath=%USERPROFILE%\documents\markdown-clipper\${source}-${title}.md
+savePath=%USERPROFILE%\documents\markdown-clipper\\${source}-${title}.md
 ```
 
 |               | Source          | Title             |
 | ------------- | --------------- | ----------------- |
-| **Browser**   | Domain name     | Title of web site |
+| **Browser**   | Domain name     | Title of website |
 | **Other app** | Executable name | Window title      |
 
 ## Post-Processing
 
-Some types of mandatory post processing are performed:
+Some types of mandatory post-processing are performed:
 
 - Convert [Setext style H1/H2 to ATX style](https://github.com/updownpress/markdown-lint/blob/master/rules/003-header-style.md)
 - Remove linefeeds from link text
@@ -137,7 +150,7 @@ Some types of mandatory post processing are performed:
 - Download the latest binary release from the [Releases](https://github.com/reinhardliess/markdown-clipper/releases) page.
 - Install [Node.js](https://nodejs.org/en/download/) for Windows\*
 - Run `.\install\install.cmd` or `.\install\install-cli.cmd`\*
-- Setup a user [configuration](#configuration) in `.\config-user\user.ini`
+- Set up a user [configuration](#configuration) in `.\config-user\user.ini`
 - Run the `markdown-clipper` executable
 
 \* if you plan on using `to-markdown-cli`, see [Conversion Options](#conversion-options)

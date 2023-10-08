@@ -28,6 +28,7 @@ class AppMarkdownClipper {
   )"
 
   ; instance variables
+  	re := new rd_RegExp()
 
     /**
     * Constructor
@@ -60,7 +61,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.9.0"
+    this.appVersion := "0.13.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -103,28 +104,17 @@ class AppMarkdownClipper {
 
     this.registerWindowGroup("markdown", "windowgroup.markdown")
 
-    ; Register hotkeys
-    this.registerHotkey(this.ini.getString("hotkeys", "clipper")
-      , objBindMethod(this, "hotkeyClipper") )
-    this.registerHotkey(this.ini.getString("hotkeys", "copyLink")
-      , objBindMethod(this, "hotkeyCopyLink")
-      , "ahk_group browsers")
+    ; Register main hotkeys
+    this.registerCustomHotkey("Clipper", "hotkeyClipper")
+    this.registerCustomHotkey("CopyLink", "hotkeyCopyLink")
 
-    condIncreaseHeading := this.ini.getString("hotkeys", "IncreaseHeading_when")
-    condDecreaseHeading := this.ini.getString("hotkeys", "DecreaseHeading_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "IncreaseHeading")
-      , objBindMethod(this, "hotkeyChangeHeading", 1)
-      , condIncreaseHeading)
-    this.registerHotkey(this.ini.getString("hotkeys", "DecreaseHeading")
-      , objBindMethod(this, "hotkeyChangeHeading", -1)
-      , condDecreaseHeading)
+    this.registerCustomHotkey("IncreaseHeading", "hotkeyChangeHeading", 1)
+    this.registerCustomHotkey("DecreaseHeading", "hotkeyChangeHeading", -1)
+    this.registerCustomHotkey("ConvertCodeblock", "hotkeyConvertCodeblock")
+    this.registerCustomHotkey("CreateLink", "hotkeyCreateLink")
+    this.registerCustomHotkey("ConvertToUL", "hotkeyUL")
 
-    condConvertCodeBlock := this.ini.getString("hotkeys", "ConvertCodeblock_when")
-    this.registerHotkey(this.ini.getString("hotkeys", "ConvertCodeblock")
-      , objBindMethod(this, "hotkeyConvertCodeblock")
-      , condConvertCodeBlock)
-
-
+    this.processCapslockHotkeys()
 
     return this
   }
@@ -140,18 +130,22 @@ class AppMarkdownClipper {
     WinGet, appPath, ProcessPath, A
     WinGetTitle, title, A
 
+    this.ClipSave()
+
     if (!Clip.Copy() ) {
-      MsgBox, 48, % this.appTitle, % AppMarkdownClipper.MSG_NO_SELECTION
+      this.displayMessageNoSelection()
       return
     }
 
     if !(html := Clip.GetHtml()) {
       Msgbox, 48, % this.appTitle, % format(AppMarkdownClipper.ERR_HTML_NO_DATA, title)
+      this.ClipRestore()
       return
     }
 
     header := Clip.parseHtmlHeader(html)
     if (!A.isInteger(header.StartFragment)) {
+      this.ClipRestore()
       this.showErrorMessage(AppMarkdownClipper.ERR_HTML_NO_DATA, title)
     }
 
@@ -188,6 +182,8 @@ class AppMarkdownClipper {
       .clipperPostProcess()
       .InsertSourceInfo()
 
+    this.ClipRestore(0)
+
     if (this.clip.ini.clipboardOutput = "copy") {
       Clip.setText(this.clip.file.contents)
     }
@@ -196,6 +192,14 @@ class AppMarkdownClipper {
       .writeFile()
 
     this.clipperProcessConfirmation(outputFileName)
+  }
+
+  displayMessageNoSelection() {
+    MsgBox, 48, % this.appTitle, % AppMarkdownClipper.MSG_NO_SELECTION
+  }
+
+  trimText(text) {
+    Return Trim(text, "`r`n`t ")
   }
 
   clipperProcessConfirmation(outputFileName) {
@@ -210,22 +214,77 @@ class AppMarkdownClipper {
 
   }
 
+  /**
+  * Saves clipboard contents
+  */
+  ClipSave() {
+  	; this variable must be global or saving the clipboard doesn't work
+    global gClipSaved
 
+    gClipSaved := ClipboardAll
+  }
+
+  /**
+  * Restores previously saved clipboard after optional delay
+  * @param {integer} [nDelay=0] - delay in ms
+  */
+  ClipRestore(nDelay:=500) {
+    ; this variable must be global or saving the clipboard doesn't work
+    global gClipSaved
+
+    ; yield to other processes
+    Sleep, 0
+    if (nDelay) {
+      Sleep, nDelay
+    }
+    clipboard := gClipSaved
+    gClipSaved := ""
+  }
+
+  /**
+   * Hotkey handler for converting selection into an unordered list
+  */
+  hotkeyUL() {
+
+    this.ClipSave()
+    text := this.getSelection({ onNoSelection: "selectLine"})
+
+    if (!this.trimText(text)) {
+      this.displayMessageNoSelection()
+      return
+    }
+
+    re := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
+    converted := re.replace(text, "m)^(.*)$", "- $1")
+    ; remove unwanted list item created by LF
+    converted := re.replace(converted, "- $")
+
+    Clip.Paste(converted)
+    this.ClipRestore()
+  }
 
   /**
    * Hotkey handler for copying url as markdown
    * Uses selection as title if available
   */
   hotkeyCopyLink() {
-    link := "", title := ""
+    link := "", linkPrefix := "", linkSuffix := "", title := ""
 
     if (Clip.CopyText()) {
       title := Clip.GetText()
+      if (this.ini.getBoolean("CopyLink", "CopyLinkToSelection")) {
+        linkSuffix := "#:~:text=" U.uriEncode(title)
+      }
     }
 
     if (!link) {
       link := this.getUrlFromBrowser()
+      if (!link) {
+        this.showErrorMessage("The link of the website couldn't be retrieved.")
+      }
     }
+
+    linkPrefix := Rtrim(this.ini.getString("CopyLink", "LinkPrefix"), "``" )
 
     if (!title) {
       WinGetTitle, title, A
@@ -233,7 +292,7 @@ class AppMarkdownClipper {
     }
 
     ; write link back to clipboard as markdown
-    Clip.SetText(format("[{1}]({2})", title, link))
+    Clip.SetText(format("{1}[{2}]({3})", linkPrefix, title, link linkSuffix))
 
     if (this.ini.getString("CopyLink", "confirmation") = "beep") {
       SoundBeep
@@ -241,17 +300,29 @@ class AppMarkdownClipper {
 
   }
 
+  hotkeyCreateLink() {
+    linkUrl := Clipboard
+    text := this.getSelection({ onNoSelection: "selectWord"})
+
+    Clip.Paste(format("[{}]({})", text, linkUrl))
+    Sleep, 300
+    clipboard := linkUrl
+  }
+
   hotkeyChangeHeading(numChange) {
     mdt := new markdownTools()
 
+    this.ClipSave()
     text := this.getSelection({ onNoSelection: "selectLine"})
 
-    if (!text) {
-      MsgBox, 64, % this.appTitle, % "Nothing selected!"
+    if (!this.trimText(text)) {
+      this.displayMessageNoSelection()
+      this.ClipRestore()
       return
     }
     converted := mdt.changeHeadingLevel(text, numChange)
     Clip.Paste(converted)
+    this.ClipRestore()
   }
 
   hotkeyConvertCodeBlock() {
@@ -269,17 +340,17 @@ class AppMarkdownClipper {
     }
     KeyWait, Enter
 
+    this.ClipSave()
     text := this.getSelection()
 
-    if (!text) {
-      MsgBox, 64, % this.appTitle, % "Nothing selected!"
-      return
-    }
-
     if (converted := mdt.convertCodeBlock(text, language)) {
-      Clip.Paste(converted)
+      Clip.Paste(converted "`n")
+      ; Create empty code block, if no selection and set new cursor position
+      if (!this.trimText(text)) {
+        Send, {up 2}
+      }
     }
-
+    this.ClipRestore()
   }
 
   /**
@@ -333,6 +404,16 @@ class AppMarkdownClipper {
     }
   }
 
+  ; Capslock combo hotkeys
+  processCapslockHotkeys() {
+    sectionHotkeys := this.ini.user.getSection("Hotkeys")
+    ; https://regex101.com/r/Hu3Nqm/latest
+    if (A.some(sectionHotkeys, objBindMethod(this.re, "isMatchB", "i)(?<!when)=\s*Capslock &"))) {
+      ; If Capslock special hotkey is used, switch off Capslock
+      SetCapsLockState, AlwaysOff
+    }
+  }
+
   /**
    * Registers hotkey
    * @param {string} hotkey - hotkey to register
@@ -354,6 +435,20 @@ class AppMarkdownClipper {
       ; clear condition
       Hotkey, IfWinActive
     }
+  }
+
+  /**
+  * Registers custom hotkey
+  * @param {string} iniKey - key in [hotkeys]
+  * @param {string} handler - name of handler method
+  * @param {any*}   args - arguments to pass to handler
+  * @returns {void}
+  */
+  registerCustomHotkey(iniKey, handler, args*) {
+    condition := this.ini.getString("hotkeys", iniKey "_when")
+    this.registerHotkey(this.ini.getString("hotkeys", iniKey)
+    , objBindMethod(this, handler, args*)
+    , condition)
   }
 
   /**

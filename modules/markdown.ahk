@@ -336,7 +336,7 @@ class markdownTools {
 
     mdt := new MarkdownTools()
 
-    lines := StrSplit(Trim(text,"`r`n"), "`r`n")
+    lines := StrSplit(Trim(text,"`r`n"), ["`r`n", "`n"])
     if (A.every(lines, objBindMethod(this.reAny, "isMatchB", "^\x20{4}"))) {
       ; transform indented code block
       buffer := this.reAny.replace(text, "m)^(?:\x20{4})(.+)$", "$1")
@@ -349,11 +349,6 @@ class markdownTools {
     ; remove unnecessary link text
     buffer := StrReplace(buffer, "[#]", "[]")
 
-    ; remove links
-    ; https://regex101.com/r/tk4Oss/1/
-    ; buffer := this.reAny.replace(buffer, "Us)(.*)\[(.*)\](\(.+)\)(.*)", "$1$2$4")
-    buffer := this.removeLinkUrl(buffer)
-
     ; remove formatting
     buffer := mdt.removeFormatting(buffer)
 
@@ -361,6 +356,8 @@ class markdownTools {
     buffer := mdt.unescapeMarkdown(buffer)
     ; buffer := StrReplace(buffer, "\===", "===")
 
+    ; remove links
+    buffer := this.removeLinkUrl(buffer)
     return format("``````{1}`r`n{2}`r`n``````", language, Trim(buffer, "`r`n"))
 
   }
@@ -386,9 +383,10 @@ class markdownTools {
 
   removeLinkUrl(text) {
     ; remove link
-    ; https://regex101.com/r/HjY0rd/2/
-    ; return this.reAny.replace(text, "^(.*)\[(.+)\](\(.+)\)(.*)$", "$1$2$4")
-    return this.reAny.replace(text, "Us)(.*)\[(.+)\](\(.+)\)(.*)", "$1$2$4")
+    ; https://regex101.com/r/tk4Oss/latest/
+    ; return this.reAny.replace(text, "m)\[(.+)\](\(.+?)\)(.*)", "$1$3")
+    ; return this.reAny.replace(text, "m)\[(.+)\](\([^)]+)\)(.*)", "$1$3")
+    return this.reAny.replace(text, "m)\[([^\]]+)\]\([^)]+\)x", "$1$3")
   }
 
   removeFormatting(text) {
