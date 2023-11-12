@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Markdown classes
  * Copyright(c) 2021 Reinhard Liess
  * MIT Licensed
@@ -270,10 +270,13 @@ class markdownClip {
 
     } else {
       ; clipped data is from app, not browser
-      ; header := this.sourceUrl
-      ;   ? format("## {1} ({2})`n`n", this.title, U.uriDecode(this.sourceUrl))
-      ;   ; : "## " this.title "`n`n"
+      ; add source url as HTML comment
+      sourceInfo := U.uriDecode(this.sourceUrl)
+      sourceComment := "<!-- " this.appName ": " sourceInfo " -->" "`n`n"
       header := "## " this.title "`n`n"
+      if (sourceInfo) {
+        header .= sourceComment
+      }
       buffer := header buffer
     }
     ; Make file end with a single newline character
