@@ -114,7 +114,7 @@ CopyLink=
 - Converts selection to fenced code block with the following post-processing
   - Remove links, keeping only the link text
   - Remove bold/italics formatting
-  - Unescape Markdown
+  - Un-escape Markdown
 - If there's no selection, an empty code block in the selected language is pasted
 
 A language can be input (and the default language can be configured)
@@ -133,8 +133,16 @@ savePath=%USERPROFILE%\documents\markdown-clipper\\${source}-${title}.md
 
 |               | Source          | Title             |
 | ------------- | --------------- | ----------------- |
-| **Browser**   | Domain name     | Title of website |
+| **Browser**   | Domain name     | Title of website  |
 | **Other app** | Executable name | Window title      |
+
+- For apps that aren't browsers the source URL, if it exists, is added as an HTML comment. Clipped from an `.chm` file:
+
+  ```markdown
+  ## Total Commander
+  
+  <!-- Totalcmd64: mk:@MSITStore:C:\totalcmd\TOTALCMD.CHM::/packedfiles.htm -->
+  ```
 
 ## Post-Processing
 

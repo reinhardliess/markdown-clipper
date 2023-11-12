@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- markdownlint-disable MD024 -->
 
+## 0.14.0 / 2023-11-12
+
+### Added
+
+* Add source url as an HTML comment for apps that aren't browsers
+
 ## 0.13.0 / 2023-10-08
 
 ### Added
