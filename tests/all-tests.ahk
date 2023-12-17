@@ -276,9 +276,14 @@ test_WinClip() {
 
 }
 
+; ShowError(exception) {
+;     Msgbox, 16, Error, % "Error in " exception.what " on line " exception.Line "`n`n" exception.Message "`n"
+;     return true
+; }
+
 ShowError(exception) {
-    Msgbox, 16, Error, % "Error in " exception.what " on line " exception.Line "`n`n" exception.Message "`n"
-    return true
+  OutputDebug, % Error "Error in " exception.what " on line " exception.Line "`n" exception.Message " (" A_LastError ")"  "`n"
+  return true
 }
 
 ; ; returns two merged objects

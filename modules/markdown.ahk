@@ -4,6 +4,7 @@
  * MIT Licensed
 */
 
+;; Class MarkdownFile
 class markdownFile {
 
   contents := ""
@@ -60,7 +61,7 @@ class markdownFile {
 }
 
 
-
+;; Class MarkdownClip
 class markdownClip {
 
   appName := ""
@@ -148,7 +149,7 @@ class markdownClip {
     ; remove linefeeds from link text
     buffer := mdt.removeLFfromLinkText(buffer)
 
-    ; replace [](link) with [#](link)
+    ; fix empty links, [](link)
     buffer := mdt.fixEmptyLinkText(buffer)
 
     ; Inline `code`, convert [text](link) to text, remove formatting, unescape Markdown
@@ -308,6 +309,7 @@ class markdownClip {
 
 }
 
+;; Class MarkdownTools
 class markdownTools {
 
   reAny := new rd_RegExp().setPcreOptions("(*ANYCRLF)")
@@ -389,7 +391,7 @@ class markdownTools {
     ; https://regex101.com/r/tk4Oss/latest/
     ; return this.reAny.replace(text, "m)\[(.+)\](\(.+?)\)(.*)", "$1$3")
     ; return this.reAny.replace(text, "m)\[(.+)\](\([^)]+)\)(.*)", "$1$3")
-    return this.reAny.replace(text, "m)\[([^\]]+)\]\([^)]+\)x", "$1$3")
+    return this.reAny.replace(text, "m)\[([^\]]+)\]\([^)]+\)", "$1")
   }
 
   removeFormatting(text) {
@@ -398,6 +400,11 @@ class markdownTools {
     return this.reAny.replace(text, "(?<!\\)(\*|_)(.*?)\1", "$2")
   }
 
+  escapeMarkdown(str) {
+    ; return RegExReplace(str, "([\[\]\\\`\*\_\{\}\(\)#+\-\.!])", "\$1")
+    return RegExReplace(str, "([\[\]\\\`\*\_\{\}\(\)#!~])", "\$1")
+  }
+  
   unescapeMarkdown(text) {
     ; unescape Markdown
     ; https://regex101.com/r/Uju9Mr/2/

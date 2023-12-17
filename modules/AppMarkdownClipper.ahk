@@ -61,7 +61,7 @@ class AppMarkdownClipper {
     ; initialization
     this.appName := "Markdown Clipper"
     ;@Ahk2Exe-Let name=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
-    this.appVersion := "0.14.0"
+    this.appVersion := "0.15.0"
     ;@Ahk2Exe-Let version=%A_PriorLine~U)^(.+"){1}(.+)".*$~$2%
 
     ;@Ahk2Exe-SetVersion %U_version%
@@ -290,7 +290,8 @@ class AppMarkdownClipper {
       WinGetTitle, title, A
       title := this.formatAppWindowTitle(title)
     }
-
+    
+    title := MarkdownTools.escapeMarkdown(title)
     ; write link back to clipboard as markdown
     Clip.SetText(format("{1}[{2}]({3})", linkPrefix, title, link linkSuffix))
 
@@ -417,7 +418,7 @@ class AppMarkdownClipper {
   /**
    * Registers hotkey
    * @param {string} hotkey - hotkey to register
-   * @param {object} handler - BoundFunc object
+   * @param {function} handler - BoundFunc object
    * @param {string} condition - #IfWinActive Wintitle condition
    * @returns {void}
    *
