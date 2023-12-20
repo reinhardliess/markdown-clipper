@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <!-- markdownlint-disable MD024 -->
 
+## 0.15.0 / 2023-12-20
+
+### Fixed
+
+- When copying a web address with title or selection, the title/selection is now escaped where applicable
+
 ## 0.14.0 / 2023-11-12
 
 ### Added

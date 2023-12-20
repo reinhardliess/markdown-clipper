@@ -402,6 +402,7 @@ class markdownTools {
 
   escapeMarkdown(str) {
     ; return RegExReplace(str, "([\[\]\\\`\*\_\{\}\(\)#+\-\.!])", "\$1")
+    ; https://regex101.com/r/VyuISJ/latest
     return RegExReplace(str, "([\[\]\\\`\*\_\{\}\(\)#!~])", "\$1")
   }
   
